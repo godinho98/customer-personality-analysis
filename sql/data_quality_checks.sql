@@ -67,7 +67,7 @@ WHERE table_name = 'marketing_campaign';
 -- =============================================================
 -- 4. Value Standardization
 -- Checks for inconsistent or invalid category values.
--- Unstandardized values break GROUP BY segmentation queries.
+-- Unstandardized values will distort segmentation results in analysis.
 -- =============================================================
 SELECT
 	COUNT(DISTINCT marital_status)
