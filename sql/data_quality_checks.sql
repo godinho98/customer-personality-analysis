@@ -43,16 +43,12 @@ SELECT 'response',                                  COUNT(*) - COUNT(response), 
 -- Checks if 'id' is truly unique across all rows.
 -- Duplicate IDs would inflate campaign and spend metrics.
 -- =============================================================
-WITH checking_table AS(
 SELECT 
-	*,
-	ROW_NUMBER() OVER (PARTITION BY id) AS rn
-FROM marketing_campaign)
-
-SELECT
-	id
-FROM checking_table
-WHERE rn <> 1;
+	id, 
+	COUNT(*) AS occurrences
+FROM marketing_campaign
+GROUP BY id
+HAVING COUNT(*) > 1
 -- FINDING: No duplicate IDs found. Dataset is clean.
 
 
@@ -108,4 +104,3 @@ GROUP BY education
 ORDER BY 2 DESC;
 -- FINDING: education has '2n Cycle' which is a valid European education level
 -- but inconsistently labeled. Renaming to 'High School' would improve clarity.
-
