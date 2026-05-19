@@ -104,3 +104,18 @@ GROUP BY education
 ORDER BY 2 DESC;
 -- FINDING: education has '2n Cycle' which is a valid European education level
 -- but inconsistently labeled. Renaming to 'High School' would improve clarity.
+
+-- =============================================================
+-- Outlier check — year_birth
+-- Identifies customers with potentially erroneous birth years.
+-- Ages above 100 are flagged for verification.
+-- =============================================================
+SELECT 
+    id,
+    year_birth,
+    DATE_PART('year', CURRENT_DATE) - year_birth AS age
+FROM marketing_campaign
+WHERE DATE_PART('year', CURRENT_DATE) - year_birth > 100;
+-- FINDING: 3 records flagged with birth years suggesting ages above 100
+-- (year_birth: 1893, 1899, 1900).
+-- Excluded from age-based analysis pending business verification.
