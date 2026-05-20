@@ -255,3 +255,116 @@ FROM campaign_answers;
 -- This segment is already engaged and spending well.
 -- Re-engaging them with personalised campaigns is likely the highest ROI action
 -- available to the marketing team.
+
+
+-- =============================================================
+-- Campaign performance — response rate per campaign
+-- Measures how many customers responded to each individual campaign
+-- and the percentage of the total customer base.
+-- Identifies which campaigns were most and least effective.
+SELECT
+	'CMP1' AS campaign,
+	COUNT(id) AS total_customers,
+	ROUND((COUNT(id)::numeric) / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2) AS performance_in_percentage
+FROM marketing_campaign
+WHERE accepted_cmp1 = 1
+UNION ALL 
+SELECT
+	'CMP2',
+	COUNT(id),
+	ROUND((COUNT(id)::numeric) / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2)
+FROM marketing_campaign
+WHERE accepted_cmp2 = 1
+UNION ALL 
+SELECT
+	'CMP3',
+	COUNT(id),
+	ROUND((COUNT(id)::numeric) / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2)
+FROM marketing_campaign
+WHERE accepted_cmp3 = 1
+UNION ALL 
+SELECT
+	'CMP4',
+	COUNT(id),
+	ROUND((COUNT(id)::numeric) / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2)
+FROM marketing_campaign
+WHERE accepted_cmp4 = 1
+UNION ALL 
+SELECT
+	'CMP5',
+	COUNT(id),
+	ROUND((COUNT(id)::numeric) / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2)
+FROM marketing_campaign
+WHERE accepted_cmp5 = 1
+UNION ALL 
+SELECT
+	'LAST_CMP',
+	COUNT(id),
+	ROUND((COUNT(id)::numeric) / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2)
+FROM marketing_campaign
+WHERE response = 1;
+-- FINDING: LAST_CMP: 14.91% | CMP4: 7.46% | CMP3: 7.28% | CMP5: 7.28%
+-- CMP1: 6.43% | CMP2: 1.34%
+-- INSIGHT: CMP2 response rate (1.34%) is significantly below all other campaigns
+-- and warrants investigation by the marketing team.
+-- LAST_CMP outperformed all individual campaigns by a wide margin (14.91%)
+-- and is worth analysing further to understand what drove higher engagement.
+-- CMP3, CMP4 and CMP5 show consistent performance and represent a reliable baseline.
+
+
+-- =============================================================
+-- CMP2 vs LAST_CMP profile comparison
+-- Compares responder profiles of the lowest and highest performing
+-- campaigns against the core responder baseline (2+ campaigns).
+WITH campaign_answers AS (
+SELECT
+	*,
+	DATE_PART('year', CURRENT_DATE) - year_birth AS age
+FROM marketing_campaign
+WHERE accepted_cmp2 = 1
+AND year_birth > 1926
+)
+
+SELECT
+	ROUND(AVG(age)::numeric, 2) AS avg_age,
+	ROUND(AVG(income)::numeric, 2) AS avg_income,
+	MODE() WITHIN GROUP (ORDER BY education) AS most_common_education,
+	MODE() WITHIN GROUP (ORDER BY marital_status) AS most_common_marital_status,
+	ROUND(AVG((kidhome + teenhome))::numeric, 2) AS avg_dependents_number,
+	ROUND(AVG(num_web_purchases + num_catalog_purchases + num_store_purchases)::numeric, 2) AS avg_purchase_number,
+	ROUND(AVG(mnt_wines + mnt_fruits + mnt_meat_products + mnt_fish_products 
+    + mnt_sweet_products + mnt_gold_prods)::numeric, 2) AS avg_spend
+FROM campaign_answers;
+
+WITH campaign_answers AS (
+SELECT
+	*,
+	DATE_PART('year', CURRENT_DATE) - year_birth AS age
+FROM marketing_campaign
+WHERE response = 1
+AND year_birth > 1926
+)
+
+SELECT
+	ROUND(AVG(age)::numeric, 2) AS avg_age,
+	ROUND(AVG(income)::numeric, 2) AS avg_income,
+	MODE() WITHIN GROUP (ORDER BY education) AS most_common_education,
+	MODE() WITHIN GROUP (ORDER BY marital_status) AS most_common_marital_status,
+	ROUND(AVG((kidhome + teenhome))::numeric, 2) AS avg_dependents_number,
+	ROUND(AVG(num_web_purchases + num_catalog_purchases + num_store_purchases)::numeric, 2) AS avg_purchase_number,
+	ROUND(AVG(mnt_wines + mnt_fruits + mnt_meat_products + mnt_fish_products 
+    + mnt_sweet_products + mnt_gold_prods)::numeric, 2) AS avg_spend
+FROM campaign_answers;
+
+-- CMP2: Age 58 | Income $71,054 | Graduation | Together
+-- Dependents 0.50 | Purchases 18.23 | Spend $1,307
+--
+-- LAST_CMP: Age 57 | Income $60,209 | Graduation | Single
+-- Dependents 0.65 | Purchases 15.37 | Spend $987
+--
+-- FINDING: CMP2 responders are nearly identical to the core responder profile —
+-- higher income and spend than average but very low overall response (30 customers).
+-- LAST_CMP reached a broader, younger, lower income segment with more dependents —
+-- a notably different profile from typical campaign responders.
+-- Despite lower individual spend ($987), LAST_CMP engaged 334 customers —
+-- over 11x more than CMP2 — making it the most impactful campaign by volume.
