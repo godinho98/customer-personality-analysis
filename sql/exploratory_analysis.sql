@@ -157,3 +157,18 @@ JOIN marketing_campaign mc ON aa.id = mc.id;
 -- NOTE: Web conversion rate cannot be calculated accurately.
 -- num_web_visits_month covers last month only while num_web_purchases
 -- covers the full customer lifetime. Time windows are incomparable.
+
+
+-- =============================================================
+-- Customer complaints analysis
+-- Measures the volume of complaints as an indicator of
+-- customer dissatisfaction within the base.
+SELECT
+	COUNT(id) AS total_customers,
+	ROUND(COUNT(id)::numeric / (SELECT COUNT(*) FROM marketing_campaign) * 100, 2)
+FROM marketing_campaign
+WHERE complain = 1;
+-- FINDING: 21 complaints out of 2,240 customers (0.94%).
+-- INSIGHT: Complaint rate is negligible — under 1% of the customer base.
+-- A profile analysis will not be performed due to the small sample size (21 records),
+-- which would not produce statistically meaningful results.
