@@ -83,6 +83,24 @@ FROM marketing_campaign;
 -- Roughly 1 in 4 customers engaged with marketing efforts.
 -- Over 70% were unaffected — significant room for targeting improvement.
 
+
+-- =============================================================
+-- Deal purchases volume and percentage
+-- Measures how many purchases were made using a discount or deal.
+-- Indicates the price sensitivity of the customer base.
+-- High values suggest customers are heavily driven by promotions,
+-- which has direct implications on margin and campaign design.
+SELECT
+	SUM(num_deals_purchases) AS total_deal_purchases,
+	ROUND(SUM(num_deals_purchases)::numeric / (SUM(num_web_purchases) + SUM(num_catalog_purchases) + 
+	SUM(num_store_purchases))::numeric * 100, 2) AS deals_purchases_percentage
+FROM marketing_campaign;
+-- FINDING: 5,208 deal purchases out of 28,083 total (18.55%).
+-- INSIGHT: Nearly 1 in 5 purchases relies on a discount or promotion.
+-- This level of deal dependency is worth monitoring — heavy reliance
+-- on deals can erode margins over time.
+
+
 -- =============================================================
 -- Active vs inactive customers
 -- Customers inactive for 90+ days are flagged as at-risk.

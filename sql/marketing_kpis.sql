@@ -368,3 +368,39 @@ FROM campaign_answers;
 -- a notably different profile from typical campaign responders.
 -- Despite lower individual spend ($987), LAST_CMP engaged 334 customers —
 -- over 11x more than CMP2 — making it the most impactful campaign by volume.
+
+
+-- =============================================================
+-- Profile of top deal buyers (75th percentile)
+-- Identifies the demographic profile of customers who most frequently
+-- purchase using discounts or promotions.
+-- Helps the marketing team understand price-sensitive segments.
+WITH main_deal_buyers AS (
+SELECT
+	*,
+	DATE_PART('year', CURRENT_DATE) - year_birth AS age
+FROM marketing_campaign
+WHERE num_deals_purchases > (SELECT PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY num_deals_purchases) FROM marketing_campaign)
+AND year_birth > 1926
+)
+
+SELECT
+	ROUND(AVG(age)::numeric, 2) AS avg_age,
+	ROUND(AVG(income)::numeric, 2) AS avg_income,
+	MODE() WITHIN GROUP (ORDER BY education) AS most_common_education,
+	MODE() WITHIN GROUP (ORDER BY marital_status) AS most_common_marital_status,
+	ROUND(AVG((kidhome + teenhome))::numeric, 2) AS avg_dependents_number,
+	ROUND(AVG(num_web_purchases + num_catalog_purchases + num_store_purchases)::numeric, 2) AS avg_purchase_number,
+	ROUND(AVG(mnt_wines + mnt_fruits + mnt_meat_products + mnt_fish_products 
+    + mnt_sweet_products + mnt_gold_prods)::numeric, 2) AS avg_spend
+FROM main_deal_buyers;
+-- FINDING: Age: 58 | Income: $50,820 | Graduation | Married
+-- Dependents: 1.49 | Purchases: 14.54 | Spend: $574.44
+-- INSIGHT: Deal buyers share the same age, education and marital status
+-- as top buyers and spenders, but differ significantly in income ($50,820 vs $71,117),
+-- dependents (1.49 vs 0.58) and average spend ($574 vs $1,249).
+-- This suggests price sensitivity is driven by financial constraints
+-- rather than demographic profile alone.
+-- Discount campaigns are effectively reaching customers who need them.
+-- Suggests an opportunity to develop more accessible price-point products
+-- targeting this segment directly, rather than relying solely on discounts.
