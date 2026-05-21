@@ -123,6 +123,9 @@ High income customers spend $1,359 on average vs $81 for low income — a 16x di
 ```
 customer-personality-analysis/
 │
+├── dataset/
+│   └── marketing_campaign.csv
+│
 ├── sql/
 │   ├── setup.sql
 │   ├── data_quality_checks.sql
